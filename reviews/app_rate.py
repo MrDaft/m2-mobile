@@ -6,7 +6,6 @@ from google.cloud import bigquery
 from google_play_scraper import app
 
 # settings
-# credentials = 'm2-main-cd9ed0b4e222.json'
 credentials = '/home/web_analytics/m2-main-cd9ed0b4e222.json'
 g_auth_service = service_account.Credentials.from_service_account_file(credentials)
 bq_client = bigquery.Client(credentials=g_auth_service)
@@ -33,7 +32,6 @@ os.append('ANDROID')
 rating_count.append(result['ratings'])
 ratings.append(result['score'])
 
-
 df = pd.DataFrame()
 df['os'] = os
 df['rating'] = ratings
@@ -49,4 +47,3 @@ df.to_gbq(
                   {'name': 'rating_count', 'type': 'INTEGER'},
                   {'name': 'date', 'type': 'DATE'}]
 )
-
