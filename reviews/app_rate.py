@@ -5,44 +5,64 @@ from google.oauth2 import service_account
 from google.cloud import bigquery
 from google_play_scraper import app
 
+# pandas settings
+pd.set_option('display.max_rows', None)  # show all rows in terminal
+pd.set_option('display.expand_frame_repr', False)  # show all columns in terminal
+
 # settings
 credentials = '/home/web_analytics/m2-main-cd9ed0b4e222.json'
 g_auth_service = service_account.Credentials.from_service_account_file(credentials)
 bq_client = bigquery.Client(credentials=g_auth_service)
 
-android_app_id = 'ru.m2.squaremeter'
-ios_app_id = '1501340734'
+android_app_id = {'ru.m2.squaremeter': 'Метр Квадратный',
+                  'ru.cian.main': 'Циан',
+                  'ru.domclick.mortgage': 'ДомКлик',
+                  'com.avito.android': 'Авито'}
+
+ios_app_id = {'1501340734': 'Метр Квадратный',
+              '911804296':'Циан',
+              '1143031400': 'ДомКлик',
+              '417281773': 'Авито'}
 country = 'RU'
 os = []
 ratings = []
+app_name = []
 rating_count = []
 today = datetime.today().strftime('%Y-%m-%d')
 
-# IOS store data
-r = requests.get(f'http://itunes.apple.com/lookup?id={ios_app_id}&country={country}')
-req = r.json()
-rating = req['results']
-os.append('IOS')
-rating_count.append(rating[0]['userRatingCount'])
-ratings.append(rating[0]['averageUserRating'])
+# appstore data
+for key, value in ios_app_id.items():
+    r = requests.get(f'http://itunes.apple.com/lookup?id={key}&country={country}')
+    req = r.json()
+    rating = req['results']
+    os.append('IOS')
+    rating_count.append(rating[0]['userRatingCount'])
+    app_name.append(value)
+    ratings.append(rating[0]['averageUserRating'])
 
-# Android store data
-result = app(android_app_id, country=country)
-os.append('ANDROID')
-rating_count.append(result['ratings'])
-ratings.append(result['score'])
+# googleplay data
+for key, value in android_app_id.items():
+    result = app(key, country=country)
+    os.append('ANDROID')
+    app_name.append(value)
+    rating_count.append(result['ratings'])
+    ratings.append(result['score'])
 
 df = pd.DataFrame()
 df['os'] = os
+df['app'] = app_name
 df['rating'] = ratings
 df['rating_count'] = rating_count
 df['date'] = today
+
+print(df)
 df.to_gbq(
     destination_table='mobile_apps.rating',
     project_id='m2-main',
-    if_exists='append',
+    if_exists='replace',
     credentials=g_auth_service,
     table_schema=[{'name': 'os', 'type': 'STRING'},
+                  {'name': 'app', 'type': 'STRING'},
                   {'name': 'rating', 'type': 'FLOAT'},
                   {'name': 'rating_count', 'type': 'INTEGER'},
                   {'name': 'date', 'type': 'DATE'}]
