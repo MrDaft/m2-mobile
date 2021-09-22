@@ -40,7 +40,7 @@ df['date'] = today
 df.to_gbq(
     destination_table='mobile_apps.rating',
     project_id='m2-main',
-    if_exists='replace',
+    if_exists='append',
     credentials=g_auth_service,
     table_schema=[{'name': 'os', 'type': 'STRING'},
                   {'name': 'rating', 'type': 'FLOAT'},
