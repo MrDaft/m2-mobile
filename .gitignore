@@ -37,6 +37,7 @@ m2-main-cd9ed0b4e222.json
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+*.csv
 
 # Unit test / coverage reports
 htmlcov/
