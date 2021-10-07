@@ -12,21 +12,18 @@ pd.set_option('display.expand_frame_repr', False)  # show all columns in termina
 # settings
 logging.basicConfig(filename='/home/web_analytics/m2-mobile/logging.log')
 credentials = '/home/web_analytics/m2-main-cd9ed0b4e222.json'
-
 gc = pygsheets.authorize(service_file=credentials)
 g_auth_service = service_account.Credentials.from_service_account_file(credentials)
 bq_client = bigquery.Client(credentials=g_auth_service)
 
-# spreadsheets
-classified_mobile = '1dojfyD0BHErfUx0YpeqsNna33JEPqABMmBaYceDjsqw'
-new_dashboard = '17pX-dnJpKh8-UNyzZl-lWGXOfMIsfo480auUieWwOP8'
-sheet_all = 'import_all'
-sheet_phone_call = 'bq_Classified'
-sheet_apprating = 'app_ratings'
+# spreadsheet
+classified_dash = '1RA0dP94Svyw-Xe0rnQMzpxxRir0ylCbS8om95pMgxWE'
 
 # bq views
-all_events = 'm2-main.mobile_apps.view_classified_mobile_all_events'
-phone_call = 'm2-main.mobile_apps.view_classified_mobile_show_and_call'
+avg_dau = 'm2-main.mobile_apps.view_avg_weekly_dau'
+fireb_installs = 'm2-main.mobile_apps.view_installs_firebase'
+m2_rating = 'm2-main.mobile_apps.view_rating_dashboard'
+wau = 'm2-main.mobile_apps.view_wau'
 
 
 def send_to_gs(spreadsheet, worksheet, dataframe, start_cell):
@@ -43,30 +40,38 @@ def bq_get_view(view_id, client=bq_client):
 def get_gs_len(spreadsheet, worksheet):
     sh = gc.open_by_key(spreadsheet)
     wks = sh.worksheet_by_title(worksheet)
-    len = wks.get_as_df()
-    return len.shape
+    gs_len = wks.get_as_df(include_tailing_empty=False)
+    return gs_len.shape
 
 
-# import all
+# new_dashboard DAU
 try:
-    df = pd.read_gbq(bq_get_view(all_events), credentials=g_auth_service)
-    send_to_gs(classified_mobile, sheet_all, df, f'A{int(get_gs_len(classified_mobile, sheet_all)[0])+2}')
+    df = pd.read_gbq(bq_get_view(avg_dau), credentials=g_auth_service)
+    send_to_gs(classified_dash, 'DAU', df, f'A{int(get_gs_len(classified_dash,"DAU")[0])+2}')
 except Exception as e:
     logging.exception(str(e))
 
 
-# bq_classified
+# new_dashboard Firebase installs
 try:
-    df = pd.read_gbq(bq_get_view(phone_call), credentials=g_auth_service)
-    send_to_gs(classified_mobile, sheet_phone_call, df, f'A{int(get_gs_len(classified_mobile,sheet_phone_call)[0])+2}')
+    df = pd.read_gbq(bq_get_view(fireb_installs), credentials=g_auth_service)
+    send_to_gs(classified_dash, 'Installs', df, f'A{int(get_gs_len(classified_dash,"Installs")[0])+2}')
 except Exception as e:
     logging.exception(str(e))
 
 
-# new_dashboard
+# new_dashboard m2 app rating
 try:
-    df = pd.read_gbq("""SELECT date, os, app, round(rating,2) AS rating FROM `m2-main.mobile_apps.rating` where date = current_date()""", credentials=g_auth_service)
+    df = pd.read_gbq(bq_get_view(m2_rating), credentials=g_auth_service)
     df['rating'] = df['rating'].astype(str).replace(r'[\.]', ',', regex=True)
-    send_to_gs(new_dashboard, sheet_apprating, df, f'A{int(get_gs_len(new_dashboard,sheet_apprating)[0])+2}')
+    send_to_gs(classified_dash, 'ratings', df, f'A{int(get_gs_len(classified_dash,"ratings")[0])+2}')
+except Exception as e:
+    logging.exception(str(e))
+
+
+# new_dashboard wau
+try:
+    df = pd.read_gbq(bq_get_view(wau), credentials=g_auth_service)
+    send_to_gs(classified_dash, 'WAU', df, f'A{int(get_gs_len(classified_dash,"WAU")[0])+2}')
 except Exception as e:
     logging.exception(str(e))
