@@ -50,7 +50,7 @@ def get_gs_len(spreadsheet, worksheet):
 # import all
 try:
     df = pd.read_gbq(bq_get_view(all_events), credentials=g_auth_service)
-    send_to_gs(classified_mobile, sheet_all, df, f'A{int(get_gs_len(classified_mobile, sheet_all)[0])+2}')
+    send_to_gs(classified_mobile, sheet_all, df, "A1")
 except Exception as e:
     logging.exception(str(e))
 
