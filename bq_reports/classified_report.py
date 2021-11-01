@@ -3,6 +3,7 @@ from google.oauth2 import service_account
 from google.cloud import bigquery
 import pygsheets
 import logging
+import os
 
 # pandas settings
 pd.set_option('display.max_rows', None)  # show all rows in terminal
@@ -11,7 +12,7 @@ pd.set_option('display.expand_frame_repr', False)  # show all columns in termina
 # TODO перенести в настройки в конфиг файл
 # settings
 logging.basicConfig(filename='/home/web_analytics/m2-mobile/logging.log')
-credentials = '/home/web_analytics/m2-main-cd9ed0b4e222.json'
+credentials = os.environ.get('credentials')
 
 gc = pygsheets.authorize(service_file=credentials)
 g_auth_service = service_account.Credentials.from_service_account_file(credentials)
