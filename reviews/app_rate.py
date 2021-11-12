@@ -11,7 +11,7 @@ pd.set_option('display.max_rows', None)  # show all rows in terminal
 pd.set_option('display.expand_frame_repr', False)  # show all columns in terminal
 
 # settings
-credentials = os.environ.get('credentials')
+credentials = os.environ.get('GOOGLE_CLOUD_CREDENTIALS')
 g_auth_service = service_account.Credentials.from_service_account_file(credentials)
 bq_client = bigquery.Client(credentials=g_auth_service)
 

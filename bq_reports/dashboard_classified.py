@@ -12,7 +12,7 @@ pd.set_option('display.expand_frame_repr', False)  # show all columns in termina
 # TODO перенести в настройки в конфиг файл
 # settings
 logging.basicConfig(filename='/home/web_analytics/m2-mobile/logging.log')
-credentials = os.environ.get('credentials')
+credentials = os.environ.get('GOOGLE_CLOUD_CREDENTIALS')
 gc = pygsheets.authorize(service_file=credentials)
 g_auth_service = service_account.Credentials.from_service_account_file(credentials)
 bq_client = bigquery.Client(credentials=g_auth_service)
