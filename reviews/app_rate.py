@@ -21,9 +21,10 @@ android_app_id = {'ru.m2.squaremeter': 'Метр Квадратный',
                   'com.avito.android': 'Авито'}
 
 ios_app_id = {'1501340734': 'Метр Квадратный',
-              '911804296':'Циан',
+              '911804296': 'Циан',
               '1143031400': 'ДомКлик',
               '417281773': 'Авито'}
+
 country = 'RU'
 os = []
 ratings = []
@@ -57,7 +58,7 @@ df['rating_count'] = rating_count
 df['date'] = today
 
 df.to_gbq(
-    destination_table='mobile_apps.rating',
+    destination_table='mobile_app_data.rating',
     project_id='m2-main',
     if_exists='append',
     credentials=g_auth_service,
