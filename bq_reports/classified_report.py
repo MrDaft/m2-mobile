@@ -66,7 +66,7 @@ except Exception as e:
 
 # new_dashboard
 try:
-    df = pd.read_gbq("""SELECT date, os, app, round(rating,2) AS rating FROM `m2-main.mobile_apps.rating` where date = current_date()""", credentials=g_auth_service)
+    df = pd.read_gbq("""SELECT date, os, app, round(rating,2) AS rating FROM `m2-main.mobile_app_data.rating` where date = current_date()""", credentials=g_auth_service)
     df['rating'] = df['rating'].astype(str).replace(r'[\.]', ',', regex=True)
     send_to_gs(new_dashboard, sheet_apprating, df, f'A{int(get_gs_len(new_dashboard,sheet_apprating)[0])+2}')
 except Exception as e:
