@@ -7,6 +7,8 @@ import pandas as pd
 from google.oauth2 import service_account
 from google.cloud import bigquery
 import os
+from datetime import datetime
+
 
 # settings
 credentials = os.environ.get('GOOGLE_CLOUD_CREDENTIALS')
@@ -19,6 +21,7 @@ keywords = ['недвижимость',
             'новостройки',
             'купить квартиру']
 
+today = datetime.today().strftime('%Y-%m-%d')
 
 f = []
 
@@ -47,7 +50,6 @@ for keyword in keywords:
                 pass
 
 
-
 # android
 for keyword in keywords:
     apps = []
@@ -74,14 +76,15 @@ for keyword in keywords:
 
 
 df = pd.DataFrame(f, columns=['app', 'os', 'keyword', 'keyword_rating'])
+df['date'] = today
 
-print(df)
 df.to_gbq(
     destination_table='mobile_app_data.aso_keywords',
     project_id='m2-main',
     if_exists='append',
     credentials=g_auth_service,
-    table_schema=[{'name': 'os', 'type': 'STRING'},
+    table_schema=[{'name': 'date', 'type': 'DATE'},
+                  {'name': 'os', 'type': 'STRING'},
                   {'name': 'app', 'type': 'STRING'},
                   {'name': 'keyword', 'type': 'STRING'},
                   {'name': 'keyword_rating', 'type': 'INTEGER'}
