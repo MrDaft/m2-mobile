@@ -9,17 +9,28 @@ from google.cloud import bigquery
 import os
 from datetime import datetime
 
+pd.set_option('display.max_rows', None)  # show all rows in terminal
+pd.set_option('display.expand_frame_repr', False)  # show all columns in terminal
 
 # settings
 credentials = os.environ.get('GOOGLE_CLOUD_CREDENTIALS')
 g_auth_service = service_account.Credentials.from_service_account_file(credentials)
 bq_client = bigquery.Client(credentials=g_auth_service)
 
-headers = {'User-Agent': 'Mozilla/5.0 (X11; CrOS i686 2268.111.0) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11'}
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'}
 
-keywords = ['недвижимость',
+keywords = ['m2',
+            'м2',
+            'метр квадратный',
+            'квадратный метр',
+            'недвижимость',
+            'купить квартиру',
+            'продажа квартиры',
+            'продажа недвижимости',
             'новостройки',
-            'купить квартиру']
+            'квартиры',
+            'ипотека',
+            ]
 
 today = datetime.today().strftime('%Y-%m-%d')
 
@@ -39,7 +50,7 @@ for keyword in keywords:
         apps.append(app)
     if 'm2.ru - Покупка недвижимости' not in apps:
         f.append(('m2.ru - Покупка недвижимости', 'ios', keyword, '11'))
-        break
+        # break
     else:
         for result in results:
             app = result.find(attrs={'class': 'rf-serp-productname'}).text.strip()
@@ -64,7 +75,7 @@ for keyword in keywords:
         apps.append(app)
     if 'M2.ru: недвижимость и квартиры' not in apps:
         f.append(('m2.ru - Покупка недвижимости', 'ios', keyword, '40'))
-        break
+        # break
     else:
         for result in results:
             app = result.find(attrs={'class': 'WsMG1c nnK0zc'}).text.strip()
