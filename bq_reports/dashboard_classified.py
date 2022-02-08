@@ -11,7 +11,7 @@ pd.set_option('display.expand_frame_repr', False)  # show all columns in termina
 
 # TODO перенести в настройки в конфиг файл
 # settings
-logging.basicConfig(filename='/home/web_analytics/m2-mobile/logging.log')
+# logging.basicConfig(filename='/home/web_analytics/m2-mobile/logging.log')
 credentials = os.environ.get('GOOGLE_CLOUD_CREDENTIALS')
 gc = pygsheets.authorize(service_file=credentials)
 g_auth_service = service_account.Credentials.from_service_account_file(credentials)
@@ -22,9 +22,11 @@ classified_dash = '1RA0dP94Svyw-Xe0rnQMzpxxRir0ylCbS8om95pMgxWE'
 
 # bq views
 avg_dau = 'm2-main.mobile_apps.view_avg_weekly_dau'
-fireb_installs = 'm2-main.mobile_apps.view_installs_firebase'
+firebase_installs = 'm2-main.mobile_apps.view_installs_firebase'
 m2_rating = 'm2-main.mobile_apps.view_rating_dashboard'
 wau = 'm2-main.mobile_apps.view_wau'
+wau_rk = 'm2-main.mobile_apps.view_rk_wau'
+mau_rk = 'm2-main.mobile_apps.view_rk_mau'
 
 
 def send_to_gs(spreadsheet, worksheet, dataframe, start_cell):
@@ -55,7 +57,7 @@ except Exception as e:
 
 # new_dashboard Firebase installs
 try:
-    df = pd.read_gbq(bq_get_view(fireb_installs), credentials=g_auth_service)
+    df = pd.read_gbq(bq_get_view(firebase_installs), credentials=g_auth_service)
     send_to_gs(classified_dash, 'Installs', df, f'A{int(get_gs_len(classified_dash,"Installs")[0])+2}')
 except Exception as e:
     logging.exception(str(e))
@@ -74,5 +76,20 @@ except Exception as e:
 try:
     df = pd.read_gbq(bq_get_view(wau), credentials=g_auth_service)
     send_to_gs(classified_dash, 'WAU', df, f'A{int(get_gs_len(classified_dash,"WAU")[0])+2}')
+except Exception as e:
+    logging.exception(str(e))
+
+
+# new_dashboard wau_rk
+try:
+    df = pd.read_gbq(bq_get_view(wau_rk), credentials=g_auth_service)
+    send_to_gs(classified_dash, 'WAU MAU RK', df, f'A{int(get_gs_len(classified_dash,"WAU MAU RK")[0])+2}')
+except Exception as e:
+    logging.exception(str(e))
+
+# new_dashboard wau_rk
+try:
+    df = pd.read_gbq(bq_get_view(mau_rk), credentials=g_auth_service)
+    send_to_gs(classified_dash, 'WAU MAU RK', df, f'D2')
 except Exception as e:
     logging.exception(str(e))
