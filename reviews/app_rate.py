@@ -19,7 +19,8 @@ bq_client = bigquery.Client(credentials=g_auth_service)
 android_app_id = {'ru.m2.squaremeter': 'Метр Квадратный',
                   'ru.cian.main': 'Циан',
                   'ru.domclick.mortgage': 'ДомКлик',
-                  'com.avito.android': 'Авито'}
+                  # 'com.avito.android': 'Авито'
+                  }
 
 ios_app_id = {'1501340734': 'Метр Квадратный',
               '911804296': 'Циан',
