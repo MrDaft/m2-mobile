@@ -47,7 +47,7 @@ for key, value in ios_app_id.items():
 
 # googleplay data
 for key, value in android_app_id.items():
-    print(f'key')
+    print(f'{key}')
     result = app(key, country=country)
     os.append('ANDROID')
     app_name.append(value)
