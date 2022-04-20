@@ -11,7 +11,8 @@ pd.set_option('display.max_rows', None)  # show all rows in terminal
 pd.set_option('display.expand_frame_repr', False)  # show all columns in terminal
 
 # settings
-credentials = os.environ.get('GOOGLE_CLOUD_CREDENTIALS')
+# credentials = os.environ.get('GOOGLE_CLOUD_CREDENTIALS')
+credentials = 'm2-main-cd9ed0b4e222.json'
 g_auth_service = service_account.Credentials.from_service_account_file(credentials)
 bq_client = bigquery.Client(credentials=g_auth_service)
 
@@ -34,7 +35,8 @@ today = datetime.today().strftime('%Y-%m-%d')
 
 # appstore data
 for key, value in ios_app_id.items():
-    r = requests.get(f'http://itunes.apple.com/lookup?id={key}&country={country}')
+    url = f'http://itunes.apple.com/lookup?id={key}&country={country}'
+    r = requests.get(url)
     req = r.json()
     rating = req['results']
     os.append('IOS')
