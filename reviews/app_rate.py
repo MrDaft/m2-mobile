@@ -23,7 +23,7 @@ client = Client(host=host, port='9000', user=user, password=password, database=d
 # bq_client = bigquery.Client(credentials=g_auth_service)
 
 client.execute(
-"CREATE TABLE IF NOT EXISTS test (os String, app String, rating Float64, rating_count Int64, date Date) Engine = Memory"
+"CREATE TABLE IF NOT EXISTS testrewiews (os String, app String, rating Float64, rating_count Int64, date Date) Engine = Memory"
 )
 
 android_app_id = {'ru.m2.squaremeter': 'Метр Квадратный',
@@ -83,4 +83,4 @@ df['date'] = today
 #                   {'name': 'date', 'type': 'DATE'}]
 # )
 
-client.insert_dataframe("INSERT INTO test VALUES", df)
+client.insert_dataframe("INSERT INTO testrewiews VALUES", df)
