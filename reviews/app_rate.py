@@ -16,7 +16,7 @@ try:
         database = os.environ.get('CH_DBWA')
         print('environ', host, user, password, database)
     else:
-        with open('creds.json') as f:
+        with open('/home/nikitindd/creds.json') as f:
             cred = json.load(f)
             host = cred['CH_HOST']
             user = cred['CH_USER']
