@@ -6,7 +6,7 @@ import os
 from clickhouse_driver import Client
 import json
 
-
+requests.get('https://api.telegram.org/bot718743630:AAF_iyWf_VmNXRq8a_Ofpt1fhFRZyDOFW3s/sendMessage?chat_id=252816148&text=started')
 # get creds
 try:
     if os.environ.get('CH_HOST') is not None:
@@ -15,6 +15,8 @@ try:
         password = os.environ.get('CH_PWD')
         database = os.environ.get('CH_DBWA')
         print('environ', host, user, password, database)
+        requests.get('https://api.telegram.org/bot718743630:AAF_iyWf_VmNXRq8a_Ofpt1fhFRZyDOFW3s/sendMessage?chat_id=252816148&text=environ')
+
     else:
         with open('/home/nikitindd/creds.json') as f:
             cred = json.load(f)
@@ -23,6 +25,7 @@ try:
             password = cred['CH_PWD']
             database = cred['CH_DBWA']
             print('creds',host, user, password, database)
+            requests.get(                'https://api.telegram.org/bot718743630:AAF_iyWf_VmNXRq8a_Ofpt1fhFRZyDOFW3s/sendMessage?chat_id=252816148&text=creds')
 except Exception:
     print('no cred')
     # exit()
@@ -35,11 +38,11 @@ pd.set_option('display.expand_frame_repr', False)  # show all columns in termina
 
 
 client = Client(host=host, port='9000', user=user, password=password, database=database, settings={'use_numpy': True})
-
+requests.get('https://api.telegram.org/bot718743630:AAF_iyWf_VmNXRq8a_Ofpt1fhFRZyDOFW3s/sendMessage?chat_id=252816148&text=clien_passed')
 client.execute(
 "CREATE TABLE IF NOT EXISTS testrewiews (os String, app String, rating Float64, rating_count Int64, date Date) Engine = Memory"
 )
-
+requests.get('https://api.telegram.org/bot718743630:AAF_iyWf_VmNXRq8a_Ofpt1fhFRZyDOFW3s/sendMessage?chat_id=252816148&text=passed_create_table')
 android_app_id = {'ru.m2.squaremeter': 'Метр Квадратный',
                   'ru.cian.main': 'Циан',
                   # 'ru.domclick.mortgage': 'ДомКлик',
@@ -83,7 +86,7 @@ df['app'] = app_name
 df['rating'] = ratings
 df['rating_count'] = rating_count
 df['date'] = today
-
+requests.get('https://api.telegram.org/bot718743630:AAF_iyWf_VmNXRq8a_Ofpt1fhFRZyDOFW3s/sendMessage?chat_id=252816148&text=data_collected')
 client.insert_dataframe("INSERT INTO testrewiews VALUES", df)
-
+requests.get('https://api.telegram.org/bot718743630:AAF_iyWf_VmNXRq8a_Ofpt1fhFRZyDOFW3s/sendMessage?chat_id=252816148&text=inserted')
 
