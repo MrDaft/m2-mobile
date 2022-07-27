@@ -19,7 +19,8 @@ try:
             cred = json.load(f)
             print(cred)
 except Exception:
-    exit()
+    print('no cred')
+    # exit()
 
 
 # # pandas settings
