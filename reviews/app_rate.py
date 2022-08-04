@@ -12,7 +12,7 @@ try:
         host = os.environ.get('CH_HOST')
         user = os.environ.get('CH_USER')
         password = os.environ.get('CH_PWD')
-        database = os.environ.get('CH_DBWA')
+        database = os.environ.get('CH_DBAP')
         print('environ', host, user, password, database)
 
     else:
@@ -21,22 +21,19 @@ try:
             host = cred['CH_HOST']
             user = cred['CH_USER']
             password = cred['CH_PWD']
-            database = cred['CH_DBWA']
+            database = cred['CH_DBAP']
             print('creds', host, user, password, database)
 except Exception:
     print('no cred')
-    # exit()
-
 
 # pandas settings
 pd.set_option('display.max_rows', None)  # show all rows in terminal
 pd.set_option('display.expand_frame_repr', False)  # show all columns in terminal
 
 
-
 client = Client(host=host, port='9000', user=user, password=password, database=database, settings={'use_numpy': True})
 client.execute(
-"CREATE TABLE IF NOT EXISTS testrewiews (os String, app String, rating Float64, rating_count Int64, date Date) Engine = Memory"
+"CREATE TABLE IF NOT EXISTS reviews (os String, app String, rating Float64, rating_count Int64, date Date) Engine = MergeTree PARTITION BY date ORDER BY date"
 )
 android_app_id = {'ru.m2.squaremeter': 'Метр Квадратный',
                   'ru.cian.main': 'Циан',
@@ -82,6 +79,4 @@ df['rating'] = ratings
 df['rating_count'] = rating_count
 df['date'] = today
 
-client.insert_dataframe("INSERT INTO testrewiews VALUES", df)
-
-client.query_dataframe('SELECT number AS x, (number + 100) AS y FROM system.numbers LIMIT 10000')
+client.insert_dataframe("INSERT INTO reviews VALUES", df)
