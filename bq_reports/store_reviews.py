@@ -1,19 +1,38 @@
 from app_store_scraper import AppStore
 import pandas as pd
-import datetime
-from google.oauth2 import service_account
-from google.cloud import bigquery
+from clickhouse_driver import Client
 import os
 from google_play_scraper import Sort, reviews_all
+import json
 
+# pandas settings
 pd.set_option('display.max_rows', None)  # show all rows in terminal
 pd.set_option('display.expand_frame_repr', False)  # show all columns in terminal
 
 # settings
-credentials = os.environ.get('GOOGLE_CLOUD_CREDENTIALS')
-g_auth_service = service_account.Credentials.from_service_account_file(credentials)
-bq_client = bigquery.Client(credentials=g_auth_service)
+try:
+    if os.environ.get('CH_HOST') is not None:
+        host = os.environ.get('CH_HOST')
+        user = os.environ.get('CH_USER')
+        password = os.environ.get('CH_PWD')
+        database = os.environ.get('CH_DBAP')
+        print('environ', host, user, password, database)
+    else:
+        with open('/home/nikitindd/creds.json') as f:
+            cred = json.load(f)
+            host = cred['CH_HOST']
+            user = cred['CH_USER']
+            password = cred['CH_PWD']
+            database = cred['CH_DBAP']
+            print('creds', host, user, password, database)
+except Exception:
+    print('no cred')
 
+client = Client(host=host, port='9000', user=user, password=password, database=database, settings={'use_numpy': True})
+
+c = client.execute(
+"DROP TABLE IF EXISTS ios_reviews"
+)
 
 # ios
 app = AppStore(country='ru', app_name="m2.ru", app_id=1501340734)
@@ -23,21 +42,13 @@ df_ios.drop('developerResponse.id', axis=1, inplace=True)
 df_ios.rename(columns={'developerResponse.body': 'developerResponse_body',
                    'developerResponse.modified': 'developerResponse_modified'}, inplace=True)
 
-df_ios.to_gbq(
-    destination_table='mobile_app_data.ios_reviews',
-    project_id='m2-main',
-    if_exists='replace',
-    credentials=g_auth_service,
-    table_schema=[{'name': 'date', 'type': 'STRING'},
-                  {'name': 'rating', 'type': 'INTEGER'},
-                  {'name': 'userName', 'type': 'STRING'},
-                  {'name': 'isEdited', 'type': 'STRING'},
-                  {'name': 'title', 'type': 'STRING'},
-                  {'name': 'review', 'type': 'STRING'},
-                  {'name': 'developerResponse.body', 'type': 'STRING'},
-                  {'name': 'developerResponse.modified', 'type': 'STRING'}
-                  ]
+
+client.execute(
+"CREATE TABLE IF NOT EXISTS ios_reviews (date DateTime64, rating Nullable(INTEGER), userName Nullable(String), isEdited UInt8, title Nullable(String), review Nullable(String), developerResponse_body Nullable(String), developerResponse_modified Nullable(String)) Engine = MergeTree PARTITION BY toYYYYMMDD(date) ORDER BY date"
 )
+
+client.insert_dataframe("INSERT INTO ios_reviews VALUES", df_ios)
+
 
 # android
 result = reviews_all(
@@ -48,21 +59,17 @@ result = reviews_all(
     sort=Sort.NEWEST  # defaults to Sort.MOST_RELEVANT
 )
 
+c = client.execute(
+"DROP TABLE IF EXISTS android_reviews"
+)
+
 df_android = pd.json_normalize(result)
 df_android.drop(['userImage', 'reviewId'], axis=1, inplace=True)
 
-df_android.to_gbq(
-    destination_table='mobile_app_data.android_reviews',
-    project_id='m2-main',
-    if_exists='replace',
-    credentials=g_auth_service,
-    table_schema=[{'name': 'at', 'type': 'STRING'},
-                  {'name': 'userName', 'type': 'STRING'},
-                  {'name': 'score', 'type': 'INTEGER'},
-                  {'name': 'content', 'type': 'STRING'},
-                  {'name': 'thumbsUpCount', 'type': 'INTEGER'},
-                  {'name': 'reviewCreatedVersion', 'type': 'STRING'},
-                  {'name': 'repliedAt', 'type': 'STRING'},
-                  {'name': 'replyContent', 'type': 'STRING'},
-                  ]
+client.execute(
+"CREATE TABLE IF NOT EXISTS android_reviews (at DateTime64, userName Nullable(String), score Nullable(INTEGER), content Nullable(String), thumbsUpCount Nullable(Int32), reviewCreatedVersion Nullable(String), repliedAt Nullable(DateTime64), replyContent Nullable(String)) Engine = MergeTree PARTITION BY toYYYYMMDD(at) ORDER BY at"
 )
+
+client.insert_dataframe("INSERT INTO android_reviews VALUES", df_android)
+
+

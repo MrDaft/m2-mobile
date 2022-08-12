@@ -1,24 +1,41 @@
 import pandas as pd
-from google.oauth2 import service_account
-from google.cloud import bigquery
 import os
+from clickhouse_driver import Client
+import json
+from time import sleep
 
 # settings
-credentials = os.environ.get('GOOGLE_CLOUD_CREDENTIALS')
-g_auth_service = service_account.Credentials.from_service_account_file(credentials)
-bq_client = bigquery.Client(credentials=g_auth_service)
+try:
+    if os.environ.get('CH_HOST') is not None:
+        host = os.environ.get('CH_HOST')
+        user = os.environ.get('CH_USER')
+        password = os.environ.get('CH_PWD')
+        database = os.environ.get('CH_DBAP')
+        print('environ', host, user, password, database)
+    else:
+        with open('/home/nikitindd/creds.json') as f:
+            cred = json.load(f)
+            host = cred['CH_HOST']
+            user = cred['CH_USER']
+            password = cred['CH_PWD']
+            database = cred['CH_DBAP']
+            print('creds', host, user, password, database)
+except Exception:
+    print('no cred')
 
+client = Client(host=host, port='9000', user=user, password=password, database=database, settings={'use_numpy': True})
+c = client.execute(
+"DROP TABLE IF EXISTS android_device_codes"
+)
+sleep(2)
+
+client.execute(
+"CREATE TABLE IF NOT EXISTS android_device_codes (retail_branding String, marketing_name Nullable(String), device_name Nullable(String), model Nullable(String)) Engine = MergeTree ORDER BY retail_branding"
+)
+sleep(5)
 df = pd.read_html('https://storage.googleapis.com/play_public/supported_devices.html')[0]
 df.columns = ['retail_branding', 'marketing_name', 'device_name', 'model']
+print(df.head())
 
-df.to_gbq(
-    destination_table='mobile_app_data.android_device_codes',
-    project_id='m2-main',
-    if_exists='replace',
-    credentials=g_auth_service,
-    table_schema=[{'name': 'retail_branding', 'type': 'STRING'},
-                  {'name': 'marketing_name', 'type': 'STRING'},
-                  {'name': 'device_name', 'type': 'STRING'},
-                  {'name': 'model_name', 'type': 'STRING'},
-                  ]
-)
+client.insert_dataframe("INSERT INTO android_device_codes VALUES", df)
+
