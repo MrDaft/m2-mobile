@@ -4,6 +4,7 @@ from clickhouse_driver import Client
 import os
 from google_play_scraper import Sort, reviews_all
 import json
+from time import sleep
 
 # pandas settings
 pd.set_option('display.max_rows', None)  # show all rows in terminal
@@ -43,12 +44,12 @@ df_ios.rename(columns={'developerResponse.body': 'developerResponse_body',
                    'developerResponse.modified': 'developerResponse_modified'}, inplace=True)
 
 
-client.execute(
-"CREATE TABLE IF NOT EXISTS ios_reviews (date DateTime64, rating Nullable(INTEGER), userName Nullable(String), isEdited UInt8, title Nullable(String), review Nullable(String), developerResponse_body Nullable(String), developerResponse_modified Nullable(String)) Engine = MergeTree PARTITION BY toYYYYMMDD(date) ORDER BY date"
+query = client.execute(
+"CREATE TABLE IF NOT EXISTS ios_reviews (date DateTime64, rating INTEGER, userName Nullable(String), isEdited Nullable(UInt8), title Nullable(String), review Nullable(String), developerResponse_body Nullable(String), developerResponse_modified Nullable(String)) Engine = MergeTree PARTITION BY rating ORDER BY date"
 )
-
-client.insert_dataframe("INSERT INTO ios_reviews VALUES", df_ios)
-
+# sleep(10)
+insert = client.insert_dataframe("INSERT INTO ios_reviews VALUES", df_ios)
+print('ios reviews are done')
 
 # android
 result = reviews_all(
@@ -66,10 +67,9 @@ c = client.execute(
 df_android = pd.json_normalize(result)
 df_android.drop(['userImage', 'reviewId'], axis=1, inplace=True)
 
-client.execute(
-"CREATE TABLE IF NOT EXISTS android_reviews (at DateTime64, userName Nullable(String), score Nullable(INTEGER), content Nullable(String), thumbsUpCount Nullable(Int32), reviewCreatedVersion Nullable(String), repliedAt Nullable(DateTime64), replyContent Nullable(String)) Engine = MergeTree PARTITION BY toYYYYMMDD(at) ORDER BY at"
+query = client.execute(
+"CREATE TABLE IF NOT EXISTS android_reviews (at DateTime64, userName Nullable(String), score INTEGER, content Nullable(String), thumbsUpCount Nullable(Int32), reviewCreatedVersion Nullable(String), repliedAt Nullable(DateTime64), replyContent Nullable(String)) Engine = MergeTree PARTITION BY score ORDER BY at"
 )
-
-client.insert_dataframe("INSERT INTO android_reviews VALUES", df_android)
-
-
+# sleep(10)
+insert = client.insert_dataframe("INSERT INTO android_reviews VALUES", df_android)
+print('android reviews are done')
